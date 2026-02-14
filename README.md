@@ -38,7 +38,32 @@ class BlockCounter extends Hook {
 
 `Hook` extends `BaseContract` from `@algorandfoundation/algorand-typescript`. It provides the `approvalProgram` and `clearStateProgram` entry points automatically. You only implement `program`, following the same pattern as `LogicSig`.
 
-At each block round, the Nimbus node simulates an application call transaction with `ApplicationArgs[0]` set to the previous state. The `approvalProgram` reads this argument, passes it to your `program` method, and logs the return value. The last log message becomes the hook's new state for that round.
+At each block round, the Nimbus node simulates an application call transaction with `ApplicationArgs[0]` set to the previous state and `ApplicationArgs[1]` set to the block's transaction types (one byte per transaction). The `approvalProgram` reads the state argument, passes it to your `program` method, and logs the return value. The last log message becomes the hook's new state for that round.
+
+Hooks can access the block's transactions via `this.blockTransactions`:
+
+```typescript
+// payment-counter.algo.ts
+import { bytes, btoi, itob, op, Uint64 } from '@algorandfoundation/algorand-typescript'
+import { Hook } from '@akitafoundation/nimbus-hooks'
+
+class PaymentCounter extends Hook {
+  public program(previousState: bytes): bytes {
+    let count = previousState.length > 0 ? btoi(previousState) : Uint64(0)
+
+    const txns = this.blockTransactions
+    for (let i = Uint64(0); i < txns.length; i = i + Uint64(1)) {
+      if (op.getByte(txns, i) === Uint64(1)) { // 0x01 = payment
+        count = count + Uint64(1)
+      }
+    }
+
+    return itob(count)
+  }
+}
+```
+
+Transaction type bytes: `0x01`=pay, `0x02`=keyreg, `0x03`=acfg, `0x04`=axfer, `0x05`=afrz, `0x06`=appl, `0x07`=stpf, `0x08`=hb.
 
 ### Comparison to other puya-ts base classes
 
@@ -76,7 +101,7 @@ The client library follows the AlgoKit Factory/Client pattern.
 
 ### Deploy a Hook
 
-Deploying without `initialState` automatically backfills the hook from genesis in the background. The node must be running in archival mode. State and history requests return a 503 error until backfill completes.
+Deploying without `initialState` automatically backfills the hook from genesis in the background. The node must be running in archival mode. While backfilling, `state['catching-up']` is `true` and the state reflects the latest processed round. You can poll `getState()` to observe backfill progress.
 
 ```typescript
 import { NimbusClient, NimbusHookFactory } from '@akitafoundation/nimbus-hooks'
@@ -183,6 +208,8 @@ See the [examples/](examples/) directory:
 
 - **counter.algo.ts** -- Increments a uint64 counter on every block
 - **echo.algo.ts** -- Passes state through unchanged (useful as a template)
+- **payment-counter.algo.ts** -- Counts total payment transactions across all blocks
+- **watch-payments.ts** -- Deploys the payment counter and watches backfill progress
 
 ## Running with the Nimbus Sandbox
 

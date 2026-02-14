@@ -33,7 +33,8 @@ import {
  *
  * Lifecycle:
  *   1. On each new block, the Nimbus node simulates an application call
- *      with ApplicationArgs[0] set to the previous state.
+ *      with ApplicationArgs[0] set to the previous state and
+ *      ApplicationArgs[1] set to the block's transaction types.
  *   2. The approval program runs. The last `log` output becomes the new state.
  *   3. A cryptographic receipt is computed binding the state to the block.
  *
@@ -54,6 +55,19 @@ export abstract class Hook<State = bytes> extends BaseContract {
    *   as the first argument on the next block.
    */
   public abstract program(previousState: State): State
+
+  /**
+   * The block's transaction types, one byte per transaction.
+   *
+   * Type enum: 0x01=pay, 0x02=keyreg, 0x03=acfg, 0x04=axfer,
+   * 0x05=afrz, 0x06=appl, 0x07=stpf, 0x08=hb, 0x00=unknown.
+   *
+   * The number of transactions is `this.blockTransactions.length`.
+   * Use `extract(this.blockTransactions, i, 1)` to read the type at index i.
+   */
+  protected get blockTransactions(): bytes {
+    return Txn.applicationArgs(1)
+  }
 
   /**
    * The AVM approval program entry point. Reads the previous state from

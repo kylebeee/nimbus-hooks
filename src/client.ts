@@ -36,6 +36,7 @@ export interface HookState {
   round: number
   state: string
   error: string
+  'catching-up': boolean
   timestamp: string
   'block-hash': string
   'program-hash': string
