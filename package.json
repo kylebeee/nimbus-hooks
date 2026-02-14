@@ -1,0 +1,14 @@
+{
+  "name": "@akita/nimbus-hooks",
+  "version": "0.1.0",
+  "description": "Algorand TypeScript base classes and client for writing Nimbus hook programs",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "build:examples": "algokit compile ts examples/ --out-dir out"
+  },
+  "peerDependencies": {
+    "@algorandfoundation/algorand-typescript": ">=1.0.0"
+  },
+  "license": "AGPL-3.0"
+}
