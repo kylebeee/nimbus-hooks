@@ -16,14 +16,14 @@ npm install @akitafoundation/nimbus-hooks @algorandfoundation/algorand-typescrip
 
 ## Writing a Hook
 
-Extend `HookContract` and implement the `program` method, following the same pattern as `LogicSig`. The only constraint is that the parameter type and return type must match. The parameter name is arbitrary. The file must use the `.algo.ts` extension.
+Extend `Hook` and implement the `program` method, following the same pattern as `LogicSig`. The only constraint is that the parameter type and return type must match. The parameter name is arbitrary. The file must use the `.algo.ts` extension.
 
 ```typescript
 // my-hook.algo.ts
 import { bytes, btoi, itob, Uint64 } from '@algorandfoundation/algorand-typescript'
-import { HookContract } from '@akitafoundation/nimbus-hooks'
+import { Hook } from '@akitafoundation/nimbus-hooks'
 
-class BlockCounter extends HookContract {
+class BlockCounter extends Hook {
   public program(previousState: bytes): bytes {
     if (previousState.length > 0) {
       const prev = btoi(previousState)
@@ -36,7 +36,7 @@ class BlockCounter extends HookContract {
 
 ### How it works
 
-`HookContract` extends `BaseContract` from `@algorandfoundation/algorand-typescript`. It provides the `approvalProgram` and `clearStateProgram` entry points automatically. You only implement `program`, following the same pattern as `LogicSig`.
+`Hook` extends `BaseContract` from `@algorandfoundation/algorand-typescript`. It provides the `approvalProgram` and `clearStateProgram` entry points automatically. You only implement `program`, following the same pattern as `LogicSig`.
 
 At each block round, the Nimbus node simulates an application call transaction with `ApplicationArgs[0]` set to the previous state. The `approvalProgram` reads this argument, passes it to your `program` method, and logs the return value. The last log message becomes the hook's new state for that round.
 
@@ -47,7 +47,7 @@ At each block round, the Nimbus node simulates an application call transaction w
 | `Contract`     | ARC4-compatible smart contracts on-chain    |
 | `LogicSig`     | Logic signatures for transaction auth       |
 | `BaseContract` | Full control over approval/clear programs   |
-| `HookContract` | Nimbus hooks (block-level derived state)     |
+| `Hook` | Nimbus hooks (block-level derived state)     |
 
 ### Constraints
 

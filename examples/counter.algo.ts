@@ -1,5 +1,5 @@
 import { bytes, btoi, itob, Uint64 } from '@algorandfoundation/algorand-typescript'
-import { HookContract } from '../src/hook-contract.algo'
+import { Hook } from '../src/hook.algo'
 
 /**
  * A simple counter hook that increments by 1 on each block.
@@ -13,7 +13,7 @@ import { HookContract } from '../src/hook-contract.algo'
  *   const program = fs.readFileSync("out/BlockCounter.approval.teal")
  *   // compile and base64 encode, then POST to /v2/nimbus/hooks
  */
-class BlockCounter extends HookContract {
+class BlockCounter extends Hook {
   public program(previousState: bytes): bytes {
     if (previousState.length > 0) {
       const prev = btoi(previousState)

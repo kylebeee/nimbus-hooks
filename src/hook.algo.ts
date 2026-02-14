@@ -7,7 +7,7 @@ import {
 } from '@algorandfoundation/algorand-typescript'
 
 /**
- * HookContract is the base class for Nimbus hook programs.
+ * Hook is the base class for Nimbus hook programs.
  *
  * Hooks are AVM programs that execute against every block on a Nimbus node.
  * They receive the previous round's state as input and produce new state as
@@ -21,7 +21,7 @@ import {
  *
  * Example:
  *
- *   class BlockCounter extends HookContract {
+ *   class BlockCounter extends Hook {
  *     public program(previousState: bytes): bytes {
  *       if (previousState.length > 0) {
  *         const prev = btoi(previousState)
@@ -40,7 +40,7 @@ import {
  * Hooks run in simulation mode with all standard AVM constraints removed.
  * Inner transactions, large state, and unlimited computation are all supported.
  */
-export abstract class HookContract<State = bytes> extends BaseContract {
+export abstract class Hook<State = bytes> extends BaseContract {
   /**
    * Implement this method with your hook logic.
    *
