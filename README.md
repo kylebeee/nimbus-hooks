@@ -54,7 +54,6 @@ At each block round, the Nimbus node simulates an application call transaction w
 - The `run` method's parameter and return value must be the same type.
 - The return value of `run` is what gets logged and becomes the hook's state for that round.
 - Hooks run in simulation mode. They cannot modify on-chain state.
-- Inner transactions are not supported.
 - All standard AVM limits (opcode budget, log size, app args) are removed in Nimbus mode. See the [go-nimbus docs](https://github.com/kylebeee/go-nimbus/blob/master/nimbus/NIMBUS.md) for the full list.
 
 ## Compiling

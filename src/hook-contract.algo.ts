@@ -35,6 +35,9 @@ import {
  *      with ApplicationArgs[0] set to the previous state.
  *   2. The approval program runs. The last `log` output becomes the new state.
  *   3. A cryptographic receipt is computed binding the state to the block.
+ *
+ * Hooks run in simulation mode with all standard AVM constraints removed.
+ * Inner transactions, large state, and unlimited computation are all supported.
  */
 export abstract class HookContract extends BaseContract {
   /**
