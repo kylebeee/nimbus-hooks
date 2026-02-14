@@ -6,7 +6,7 @@ Algorand TypeScript base classes and client library for writing Nimbus hook prog
 
 Hooks are AVM programs that run against every block on a Nimbus node. They receive the previous round's state as input, produce new state as output, and generate cryptographic receipts that chain each state to the block it was derived from.
 
-For full Nimbus documentation, see [NIMBUS.md](https://github.com/akita/go-nimbus/blob/master/nimbus/NIMBUS.md) in the go-nimbus repository.
+For full Nimbus documentation, see [NIMBUS.md](https://github.com/kylebeee/go-nimbus/blob/master/nimbus/NIMBUS.md) in the go-nimbus repository.
 
 ## Installation
 
@@ -58,18 +58,13 @@ At each block round, the Nimbus node simulates an application call transaction w
 
 ## Compiling
 
-Use the AlgoKit CLI to compile your hook to TEAL:
+Use the AlgoKit CLI to compile your hook:
 
 ```bash
 algokit compile ts my-hook.algo.ts --out-dir out
 ```
 
-This produces `out/BlockCounter.approval.teal`. Compile it to bytecode and base64 encode it for the Nimbus API:
-
-```bash
-goal clerk compile out/BlockCounter.approval.teal -o out/BlockCounter.tok
-base64 < out/BlockCounter.tok
-```
+This produces an ARC-56 app spec at `out/BlockCounter.arc56.json` containing the compiled bytecode. The app spec is used directly by the client for deployment.
 
 ## Client Library
 
@@ -86,28 +81,28 @@ const client = new NimbusClient(
 )
 ```
 
-### Register a Hook
+### Deploy a Hook
+
+Import the ARC-56 app spec produced by the compiler and pass it to `deploy`:
 
 ```typescript
-import { readFileSync } from 'fs'
+import spec from './out/BlockCounter.arc56.json'
 
-const program = readFileSync('out/BlockCounter.tok').toString('base64')
-
-await client.createHook({
+await client.deploy({
   id: 'block-counter',
-  program: program,
+  appSpec: spec,
 })
 ```
 
-### Register with Initial State
+### Deploy with Initial State
 
 ```typescript
-const seed = Buffer.from('hello world').toString('base64')
+import spec from './out/SeededHook.arc56.json'
 
-await client.createHook({
+await client.deploy({
   id: 'seeded-hook',
-  program: program,
-  'initial-state': seed,
+  appSpec: spec,
+  initialState: NimbusClient.encodeState(new TextEncoder().encode('hello world')),
 })
 ```
 
@@ -193,12 +188,6 @@ docker compose -f docker-compose.nimbus.yml up -d
 # Compile your hook
 algokit compile ts my-hook.algo.ts --out-dir out
 
-# Register it
-curl -s -X POST \
-  -H "X-Algo-API-Token: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" \
-  -d '{"id":"my-hook","program":"<base64-bytecode>"}' \
-  http://localhost:4101/v2/nimbus/hooks
-
-# Or use the client
+# Deploy using the client
 npx tsx deploy.ts
 ```

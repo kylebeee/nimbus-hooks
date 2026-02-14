@@ -3,10 +3,24 @@
  *
  * Usage:
  *
+ *   import spec from './out/BlockCounter.arc56.json'
+ *
  *   const client = new NimbusClient("http://localhost:4101", "aaa...");
- *   await client.createHook({ id: "counter", program: compiledBase64 });
+ *   await client.deploy({ id: "counter", appSpec: spec });
  *   const state = await client.getState("counter");
  */
+
+/** Minimal ARC-56 app spec shape used for hook deployment. */
+export interface AppSpec {
+  source?: {
+    approval: string
+    clear: string
+  }
+  byteCode?: {
+    approval: string
+    clear: string
+  }
+}
 
 export interface HookInfo {
   id: string
@@ -47,6 +61,15 @@ export interface CreateHookRequest {
   'initial-state'?: string
 }
 
+export interface DeployHookParams {
+  /** Unique identifier for the hook. */
+  id: string
+  /** ARC-56 app spec produced by `algokit compile ts`. */
+  appSpec: AppSpec
+  /** Optional base64-encoded initial state. */
+  initialState?: string
+}
+
 export class NimbusClient {
   private baseUrl: string
   private token: string
@@ -80,6 +103,26 @@ export class NimbusClient {
     return response.json() as T
   }
 
+  /**
+   * Deploy a hook from an ARC-56 app spec.
+   *
+   * Extracts the compiled bytecode (or TEAL source) from the spec and
+   * registers it with the Nimbus node. This is the recommended way to
+   * register hooks compiled with `algokit compile ts`.
+   */
+  async deploy(params: DeployHookParams): Promise<void> {
+    const { appSpec } = params
+    const program = appSpec.byteCode?.approval ?? appSpec.source?.approval
+    if (!program) {
+      throw new Error('App spec must contain byteCode.approval or source.approval')
+    }
+    await this.createHook({
+      id: params.id,
+      program,
+      'initial-state': params.initialState,
+    })
+  }
+
   /** List all registered hooks. */
   async listHooks(): Promise<HookInfo[]> {
     const result = await this.request<{ hooks: HookInfo[] }>('GET', '/v2/nimbus/hooks')
@@ -91,7 +134,7 @@ export class NimbusClient {
     return this.request<HookInfo>('GET', `/v2/nimbus/hooks/${hookId}`)
   }
 
-  /** Register a new hook. */
+  /** Register a new hook from raw base64-encoded bytecode. */
   async createHook(req: CreateHookRequest): Promise<void> {
     await this.request<void>('POST', '/v2/nimbus/hooks', req)
   }
