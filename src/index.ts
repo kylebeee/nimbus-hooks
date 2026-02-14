@@ -1,2 +1,3 @@
 export { HookContract } from './hook-contract.algo'
-export { NimbusClient, type HookInfo, type HookState, type HookHistory, type VerifyResult } from './client'
+export { NimbusClient } from './client'
+export type { HookInfo, HookState, HookHistory, VerifyResult } from './client'

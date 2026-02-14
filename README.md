@@ -1,4 +1,4 @@
-# @akita/nimbus-hooks
+# @akitafoundation/nimbus-hooks
 
 Algorand TypeScript base classes and client library for writing Nimbus hook programs.
 
@@ -11,7 +11,7 @@ For full Nimbus documentation, see [NIMBUS.md](https://github.com/akita/go-nimbu
 ## Installation
 
 ```bash
-npm install @akita/nimbus-hooks @algorandfoundation/algorand-typescript
+npm install @akitafoundation/nimbus-hooks @algorandfoundation/algorand-typescript
 ```
 
 ## Writing a Hook
@@ -21,7 +21,7 @@ Extend `HookContract` and implement the `run` method. The file must use the `.al
 ```typescript
 // my-hook.algo.ts
 import { bytes, btoi, itob, Uint64 } from '@algorandfoundation/algorand-typescript'
-import { HookContract } from '@akita/nimbus-hooks'
+import { HookContract } from '@akitafoundation/nimbus-hooks'
 
 class BlockCounter extends HookContract {
   public run(previousState: bytes): bytes {
@@ -78,7 +78,7 @@ The package includes a TypeScript client for the Nimbus REST API.
 ### Setup
 
 ```typescript
-import { NimbusClient } from '@akita/nimbus-hooks'
+import { NimbusClient } from '@akitafoundation/nimbus-hooks'
 
 const client = new NimbusClient(
   'http://localhost:4101',

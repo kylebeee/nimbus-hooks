@@ -1,5 +1,5 @@
 {
-  "name": "@akita/nimbus-hooks",
+  "name": "@akitafoundation/nimbus-hooks",
   "version": "0.1.0",
   "description": "Algorand TypeScript base classes and client for writing Nimbus hook programs",
   "main": "src/index.ts",
