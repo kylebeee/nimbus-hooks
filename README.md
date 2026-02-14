@@ -16,7 +16,7 @@ npm install @akitafoundation/nimbus-hooks @algorandfoundation/algorand-typescrip
 
 ## Writing a Hook
 
-Extend `HookContract` and implement the `run` method. The file must use the `.algo.ts` extension.
+Extend `HookContract` and implement the `run` method. The only constraint is that the parameter type and return type must match. The parameter name is arbitrary. The file must use the `.algo.ts` extension.
 
 ```typescript
 // my-hook.algo.ts
@@ -51,10 +51,11 @@ At each block round, the Nimbus node simulates an application call transaction w
 
 ### Constraints
 
+- The `run` method's parameter and return value must be the same type.
+- The return value of `run` is what gets logged and becomes the hook's state for that round.
 - Hooks run in simulation mode. They cannot modify on-chain state.
 - Inner transactions are not supported.
-- The program must emit at least one log message or the evaluation records an error.
-- The return value of `run` is what gets logged and becomes state.
+- All standard AVM limits (opcode budget, log size, app args) are removed in Nimbus mode. See the [go-nimbus docs](https://github.com/kylebeee/go-nimbus/blob/master/nimbus/NIMBUS.md) for the full list.
 
 ## Compiling
 

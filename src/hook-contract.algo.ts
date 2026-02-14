@@ -14,8 +14,9 @@ import {
  * output. The output is captured from the last log message emitted by the
  * program.
  *
- * Subclasses must implement the `run` method. The return value of `run` is
- * automatically logged and becomes the hook's new state.
+ * Subclasses must implement the `run` method. The only constraint is that
+ * the parameter type and return type must match. The return value of `run`
+ * is automatically logged and becomes the hook's new state.
  *
  * Example:
  *
@@ -34,22 +35,19 @@ import {
  *      with ApplicationArgs[0] set to the previous state.
  *   2. The approval program runs. The last `log` output becomes the new state.
  *   3. A cryptographic receipt is computed binding the state to the block.
- *
- * Constraints:
- *   - Hooks run in simulation mode. No on-chain state changes occur.
- *   - The program must emit at least one log message or the evaluation
- *     will record an error.
- *   - Inner transactions are not supported.
  */
 export abstract class HookContract extends BaseContract {
   /**
    * Implement this method with your hook logic.
    *
+   * The only constraint is that the parameter and return value must be the
+   * same type. The parameter name is arbitrary.
+   *
    * @param previousState - The state output from the previous block round.
    *   On the first evaluation this will be the initial-state provided at
    *   hook creation, or empty bytes if none was given.
    * @returns The new state for this round. This value will be passed back
-   *   as previousState on the next block.
+   *   as the first argument on the next block.
    */
   public abstract run(previousState: bytes): bytes
 
