@@ -16,7 +16,7 @@ npm install @akitafoundation/nimbus-hooks @algorandfoundation/algorand-typescrip
 
 ## Writing a Hook
 
-Extend `HookContract` and implement the `run` method. The only constraint is that the parameter type and return type must match. The parameter name is arbitrary. The file must use the `.algo.ts` extension.
+Extend `HookContract` and implement the `program` method, following the same pattern as `LogicSig`. The only constraint is that the parameter type and return type must match. The parameter name is arbitrary. The file must use the `.algo.ts` extension.
 
 ```typescript
 // my-hook.algo.ts
@@ -24,7 +24,7 @@ import { bytes, btoi, itob, Uint64 } from '@algorandfoundation/algorand-typescri
 import { HookContract } from '@akitafoundation/nimbus-hooks'
 
 class BlockCounter extends HookContract {
-  public run(previousState: bytes): bytes {
+  public program(previousState: bytes): bytes {
     if (previousState.length > 0) {
       const prev = btoi(previousState)
       return itob(prev + Uint64(1))
@@ -36,9 +36,9 @@ class BlockCounter extends HookContract {
 
 ### How it works
 
-`HookContract` extends `BaseContract` from `@algorandfoundation/algorand-typescript`. It provides the `approvalProgram` and `clearStateProgram` entry points automatically. You only implement `run`.
+`HookContract` extends `BaseContract` from `@algorandfoundation/algorand-typescript`. It provides the `approvalProgram` and `clearStateProgram` entry points automatically. You only implement `program`, following the same pattern as `LogicSig`.
 
-At each block round, the Nimbus node simulates an application call transaction with `ApplicationArgs[0]` set to the previous state. The `approvalProgram` reads this argument, passes it to your `run` method, and logs the return value. The last log message becomes the hook's new state for that round.
+At each block round, the Nimbus node simulates an application call transaction with `ApplicationArgs[0]` set to the previous state. The `approvalProgram` reads this argument, passes it to your `program` method, and logs the return value. The last log message becomes the hook's new state for that round.
 
 ### Comparison to other puya-ts base classes
 
@@ -51,8 +51,8 @@ At each block round, the Nimbus node simulates an application call transaction w
 
 ### Constraints
 
-- The `run` method's parameter and return value must be the same type.
-- The return value of `run` is what gets logged and becomes the hook's state for that round.
+- The `program` method's parameter and return value must be the same type.
+- The return value of `program` is what gets logged and becomes the hook's state for that round.
 - Hooks run in simulation mode. They cannot modify on-chain state.
 - All standard AVM limits (opcode budget, log size, app args) are removed in Nimbus mode. See the [go-nimbus docs](https://github.com/kylebeee/go-nimbus/blob/master/nimbus/NIMBUS.md) for the full list.
 

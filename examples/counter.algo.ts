@@ -14,7 +14,7 @@ import { HookContract } from '../src/hook-contract.algo'
  *   // compile and base64 encode, then POST to /v2/nimbus/hooks
  */
 class BlockCounter extends HookContract {
-  public run(previousState: bytes): bytes {
+  public program(previousState: bytes): bytes {
     if (previousState.length > 0) {
       const prev = btoi(previousState)
       return itob(prev + Uint64(1))

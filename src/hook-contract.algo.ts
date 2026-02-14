@@ -14,14 +14,15 @@ import {
  * output. The output is captured from the last log message emitted by the
  * program.
  *
- * Subclasses must implement the `run` method. The only constraint is that
- * the parameter type and return type must match. The return value of `run`
- * is automatically logged and becomes the hook's new state.
+ * Subclasses must implement the `program` method, following the same
+ * pattern as LogicSig. The only constraint is that the parameter type
+ * and return type must match. The return value of `program` is
+ * automatically logged and becomes the hook's new state.
  *
  * Example:
  *
  *   class BlockCounter extends HookContract {
- *     public run(previousState: bytes): bytes {
+ *     public program(previousState: bytes): bytes {
  *       if (previousState.length > 0) {
  *         const prev = btoi(previousState)
  *         return itob(prev + 1)
@@ -52,17 +53,17 @@ export abstract class HookContract extends BaseContract {
    * @returns The new state for this round. This value will be passed back
    *   as the first argument on the next block.
    */
-  public abstract run(previousState: bytes): bytes
+  public abstract program(previousState: bytes): bytes
 
   /**
    * The AVM approval program entry point. Reads the previous state from
-   * ApplicationArgs[0], calls run(), and logs the result.
+   * ApplicationArgs[0], calls program(), and logs the result.
    *
-   * Do not override this method. Implement `run` instead.
+   * Do not override this method. Implement `program` instead.
    */
   public approvalProgram(): boolean {
     const previousState = Txn.applicationArgs(0)
-    const newState = this.run(previousState)
+    const newState = this.program(previousState)
     log(newState)
     return true
   }

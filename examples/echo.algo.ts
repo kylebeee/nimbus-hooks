@@ -6,7 +6,7 @@ import { HookContract } from '../src/hook-contract.algo'
  * unchanged. Useful as a template or for testing the hook pipeline.
  */
 class Echo extends HookContract {
-  public run(previousState: bytes): bytes {
+  public program(previousState: bytes): bytes {
     return previousState
   }
 }
