@@ -76,6 +76,8 @@ The client library follows the AlgoKit Factory/Client pattern.
 
 ### Deploy a Hook
 
+Deploying without `initialState` automatically backfills the hook from genesis in the background. The node must be running in archival mode. State and history requests return a 503 error until backfill completes.
+
 ```typescript
 import { NimbusClient, NimbusHookFactory } from '@akitafoundation/nimbus-hooks'
 import spec from './out/BlockCounter.arc56.json'
@@ -90,6 +92,8 @@ const hook = await factory.send.deploy({ id: 'block-counter' })
 ```
 
 ### Deploy with Initial State
+
+Providing `initialState` skips backfill and makes the hook available immediately.
 
 ```typescript
 const hook = await factory.send.deploy({
