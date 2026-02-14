@@ -40,7 +40,7 @@ import {
  * Hooks run in simulation mode with all standard AVM constraints removed.
  * Inner transactions, large state, and unlimited computation are all supported.
  */
-export abstract class HookContract extends BaseContract {
+export abstract class HookContract<State = bytes> extends BaseContract {
   /**
    * Implement this method with your hook logic.
    *
@@ -53,7 +53,7 @@ export abstract class HookContract extends BaseContract {
    * @returns The new state for this round. This value will be passed back
    *   as the first argument on the next block.
    */
-  public abstract program(previousState: bytes): bytes
+  public abstract program(previousState: State): State
 
   /**
    * The AVM approval program entry point. Reads the previous state from
@@ -62,9 +62,9 @@ export abstract class HookContract extends BaseContract {
    * Do not override this method. Implement `program` instead.
    */
   public approvalProgram(): boolean {
-    const previousState = Txn.applicationArgs(0)
+    const previousState = Txn.applicationArgs(0) as unknown as State
     const newState = this.program(previousState)
-    log(newState)
+    log(newState as unknown as bytes)
     return true
   }
 
