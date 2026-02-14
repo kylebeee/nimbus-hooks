@@ -64,65 +64,57 @@ Use the AlgoKit CLI to compile your hook:
 algokit compile ts my-hook.algo.ts --out-dir out
 ```
 
-This produces an ARC-56 app spec at `out/BlockCounter.arc56.json` containing the compiled bytecode. The app spec is used directly by the client for deployment.
+This produces an ARC-56 app spec at `out/BlockCounter.arc56.json` containing the compiled bytecode.
 
 ## Client Library
 
-The package includes a TypeScript client for the Nimbus REST API.
+The client library follows the AlgoKit Factory/Client pattern.
 
-### Setup
-
-```typescript
-import { NimbusClient } from '@akitafoundation/nimbus-hooks'
-
-const client = new NimbusClient(
-  'http://localhost:4101',
-  'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
-)
-```
+- `NimbusClient` -- low-level REST client (like `AlgorandClient`)
+- `NimbusHookFactory` -- deploys hooks from an app spec (like `AppFactory`)
+- `NimbusHookClient` -- interacts with a deployed hook (like `AppClient`)
 
 ### Deploy a Hook
 
-Import the ARC-56 app spec produced by the compiler and pass it to `deploy`:
-
 ```typescript
+import { NimbusClient, NimbusHookFactory } from '@akitafoundation/nimbus-hooks'
 import spec from './out/BlockCounter.arc56.json'
 
-await client.deploy({
-  id: 'block-counter',
-  appSpec: spec,
-})
+const nimbus = new NimbusClient(
+  'http://localhost:4101',
+  'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+)
+
+const factory = new NimbusHookFactory({ appSpec: spec, client: nimbus })
+const hook = await factory.send.deploy({ id: 'block-counter' })
 ```
 
 ### Deploy with Initial State
 
 ```typescript
-import spec from './out/SeededHook.arc56.json'
-
-await client.deploy({
+const hook = await factory.send.deploy({
   id: 'seeded-hook',
-  appSpec: spec,
-  initialState: NimbusClient.encodeState(new TextEncoder().encode('hello world')),
+  initialState: NimbusHookClient.encodeState(new TextEncoder().encode('hello world')),
 })
 ```
 
-### List Hooks
+### Get a Client for an Existing Hook
 
 ```typescript
-const hooks = await client.listHooks()
-for (const hook of hooks) {
-  console.log(hook.id, hook['program-hash'])
-}
+// From the NimbusClient
+const hook = nimbus.getHookClient('block-counter')
+
+// Or from the factory
+const hook = factory.getHookClient('block-counter')
 ```
 
 ### Read Latest State
 
 ```typescript
-const state = await client.getState('block-counter')
+const state = await hook.getState()
 console.log('Round:', state.round)
 
-// Decode an 8-byte big-endian counter
-const counter = NimbusClient.decodeUint64(state.state)
+const counter = NimbusHookClient.decodeUint64(state.state)
 console.log('Counter:', counter)
 ```
 
@@ -130,13 +122,13 @@ console.log('Counter:', counter)
 
 ```typescript
 // Full history
-const all = await client.getHistory('block-counter')
+const all = await hook.getHistory()
 
 // Specific range
-const range = await client.getHistory('block-counter', 10, 20)
+const range = await hook.getHistory(10, 20)
 
 for (const entry of range) {
-  const value = NimbusClient.decodeUint64(entry.state)
+  const value = NimbusHookClient.decodeUint64(entry.state)
   console.log(`Round ${entry.round}: ${value}`)
 }
 ```
@@ -144,7 +136,7 @@ for (const entry of range) {
 ### Verify the Receipt Chain
 
 ```typescript
-const result = await client.verify('block-counter')
+const result = await hook.verify()
 console.log('Valid:', result.valid)
 console.log('Entries:', result.entries)
 if (!result.valid) {
@@ -156,20 +148,29 @@ if (!result.valid) {
 ### Delete a Hook
 
 ```typescript
-await client.deleteHook('block-counter')
+await hook.delete()
+```
+
+### List All Hooks
+
+```typescript
+const hooks = await nimbus.listHooks()
+for (const info of hooks) {
+  console.log(info.id, info['program-hash'])
+}
 ```
 
 ### Decode Helpers
 
 ```typescript
 // Decode base64 state to raw bytes
-const raw: Uint8Array = NimbusClient.decodeState(state.state)
+const raw: Uint8Array = NimbusHookClient.decodeState(state.state)
 
 // Decode base64 state to BigInt (8-byte big-endian uint64)
-const value: bigint = NimbusClient.decodeUint64(state.state)
+const value: bigint = NimbusHookClient.decodeUint64(state.state)
 
 // Encode raw bytes to base64 for API requests
-const encoded: string = NimbusClient.encodeState(new Uint8Array([1, 2, 3]))
+const encoded: string = NimbusHookClient.encodeState(new Uint8Array([1, 2, 3]))
 ```
 
 ## Examples
